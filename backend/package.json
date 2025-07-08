@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node index.js",
-  "lint": "echo \"⚠️  Skipping lint for prototype\"",
-  "format": "prettier --write .",
-  "test": "jest --passWithNoTests"
-},
+    "start": "node index.js",
+    "lint": "echo \"⚠️  Skipping lint for prototype\"",
+    "format": "prettier --write .",
+    "test": "jest --passWithNoTests"
+  },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^5.1.0"
   },
   "devDependencies": {
