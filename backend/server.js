@@ -398,36 +398,23 @@ app.get('/api/recommendations', async (req, res) => {
       );
     }
 
-    // Apply pack filtering for Beer (and optionally other categories) - only show multi-packs
+    // Apply pack filtering for Beer only (RTD products are often sold individually too)
     if (category === 'Beer') {
       categoryProducts = categoryProducts.filter(product => {
         const brand = product.brand.toLowerCase();
         const descrip = product.descrip.toLowerCase();
         const size = product.size.toLowerCase();
         
-        // Look for pack indicators in size, brand, or description
-        const hasPackIndicator = (
+        return (
           size.includes('pk') || size.includes('pack') || size.includes('case') ||
           brand.includes('pack') || brand.includes('case') || brand.includes('variety') ||
-          descrip.includes('pack') || descrip.includes('case') || descrip.includes('variety')
+          descrip.includes('pack') || descrip.includes('case') || descrip.includes('variety') ||
+          size.includes('6') || size.includes('12') || size.includes('18') || size.includes('24')
         );
-        
-        // Look for numeric pack indicators (6-pack, 12-pack, etc.)
-        const hasNumericPack = (
-          size.includes('6') || size.includes('12') || size.includes('18') || 
-          size.includes('24') || size.includes('30') || size.includes('36')
-        );
-        
-        // Exclude obvious single items
-        const isSingleItem = (
-          size.includes('ml') || size.includes('oz') || size.includes('bottle') ||
-          size.includes('can') || size.includes('pint') || size.includes('quart')
-        ) && !hasPackIndicator && !hasNumericPack;
-        
-        return (hasPackIndicator || hasNumericPack) && !isSingleItem;
       });
-      console.log(`🍺 Filtered Beer to ${categoryProducts.length} pack items only`);
     }
+    
+    // For RTD, we'll include both individual and pack items since they're commonly sold both ways
 
     // Filter by selected tags if any are provided
     if (selectedTags.length > 0) {
@@ -448,58 +435,14 @@ app.get('/api/recommendations', async (req, res) => {
     
     // Apply limit
     const limitNum = parseInt(limit);
-    const results = categoryProducts.slice(0, limitNum).map(product => {
-      // Create appropriate category URL for Capital Beer & Wine
-      let storeUrl = 'https://capitalbeerwine.com';
-      
-      if (category === 'Beer') {
-        // Extract tags to determine beer type for better linking
-        const productTags = extractTagsFromBrand(`${product.brand} ${product.descrip}`, category);
-        if (productTags.includes('IPA')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/ipa/';
-        } else if (productTags.includes('Hard Seltzer')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/hard-seltzer/';
-        } else if (productTags.includes('Lager')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/lager/';
-        } else if (productTags.includes('Stout')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/stout/';
-        } else if (productTags.includes('Pilsner')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/pilsner/';
-        } else {
-          storeUrl = 'https://capitalbeerwine.com/beer/';
-        }
-      } else if (category === 'Wine') {
-        // Extract tags to determine wine type for better linking
-        const productTags = extractTagsFromBrand(`${product.brand} ${product.descrip}`, category);
-        if (productTags.includes('Chardonnay')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/chardonnay/';
-        } else if (productTags.includes('Cabernet Sauvignon')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/cabernet-sauvignon/';
-        } else if (productTags.includes('Pinot Noir')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/pinot-noir/';
-        } else if (productTags.includes('Sauvignon Blanc')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/sauvignon-blanc/';
-        } else if (productTags.includes('Red Blend')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/red-blends/';
-        } else {
-          storeUrl = 'https://capitalbeerwine.com/wine/';
-        }
-      } else if (category === 'RTD') {
-        storeUrl = 'https://capitalbeerwine.com/beer/'; // RTDs often grouped with beer
-      }
-      
-      return {
-        id: product.code_num,
-        name: `${product.brand} ${product.descrip}`.trim(),
-        price: product.price,
-        img: `https://via.placeholder.com/80?text=${encodeURIComponent(product.brand.split(' ')[0])}`,
-        tags: extractTagsFromBrand(`${product.brand} ${product.descrip}`, category),
-        size: product.size,
-        barcode: product.barcode,
-        storeUrl: storeUrl,
-        storeName: 'Capital Beer & Wine'
-      };
-    });
+    const results = categoryProducts.slice(0, limitNum).map(product => ({
+      id: product.code_num,
+      name: `${product.brand} ${product.descrip}`.trim(),
+      price: product.price,
+      img: `https://via.placeholder.com/80?text=${encodeURIComponent(product.brand.split(' ')[0])}`,
+      tags: extractTagsFromBrand(`${product.brand} ${product.descrip}`, category),
+      size: product.size
+    }));
     
     console.log(`✅ Returning ${results.length} real CSV results for ${category}`);
     res.json(results);

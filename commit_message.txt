@@ -1,1 +1,1 @@
-feat: create initial landing page
+feat: add new landing page and content
