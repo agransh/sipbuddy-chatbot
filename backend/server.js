@@ -134,11 +134,49 @@ app.get('/api/types', async (req, res) => {
   }
 });
 
-// — Map UI categories to LIQCODE.type codes (from CSV analysis) —
+// — Map UI categories to product_type from CSV —
 const TYPE_MAP = {
-  Beer: ['60', '85', '94', '97'],  // Beer types from CSV
-  Wine: ['7', '8', '56', '68']     // Wine types from CSV  
-  // RTD is determined by product description, not type codes
+  Beer: [
+    'beer > ipa',
+    'beer > lager',
+    'beer > stout',
+    'beer > wheat',
+    'beer > cider',
+    'beer > pale ale',
+    'beer > double ipa',
+    'beer > sour',
+    'beer > fruit beer',
+    'beer > imported beer',
+    'beer > vienna lager',
+    'beer > trappist ale',
+    'beer > seasonal',
+    'beer > non alcoholic',
+    'beer > flavored malt beverage',
+    'beer > seltzer',
+    'beer'
+  ],
+  Wine: [
+    'wine > red',
+    'wine > white',
+    'wine > sparkling',
+    'wine > rose',
+    'wine > port',
+    'wine > dessert',
+    'wine > orange',
+    'wine > fortified',
+    'wine > kosher',
+    'wine',
+    'spirits > sake',
+    'spirits > soju'
+  ],
+  RTD: [
+    'spirits > rtd',
+    'spirits > vodka',
+    'spirits > whiskey',
+    'spirits > cocktail',
+    'spirits > seltzer',
+    'spirits'
+  ]
 };
 
 // — Helper function to identify RTD products by description —
@@ -188,10 +226,161 @@ function isRTDProduct(product) {
   return hasRTDKeyword && !isDefinitelyNonAlcoholic;
 }
 
-// — Load and parse CSV data —
+// — Load and parse product data —
 let csvProducts = [];
+let imageMappings = new Map(); // Store image mappings from new CSV
 
-function loadCSVData() {
+// Load products.csv with images and Ridge URLs (using proper CSV parsing)
+function loadProductMappings() {
+  try {
+    const csvData = fs.readFileSync('products.csv', 'utf8');
+    const lines = csvData.split('\n');
+    csvProducts = [];
+    
+    // Parse header using proper CSV parsing (handles quoted fields)
+    const headers = lines[0].split(/,(?=(?:(?:[^\"]*"){2})*[^\"]*$)/).map(header => header.trim());
+
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim()) {
+        // Split by comma, but only if not inside double quotes
+        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(value => value.trim());
+        const product = {};
+        headers.forEach((header, index) => {
+          // Remove leading/trailing quotes from values
+          product[header] = values[index] ? values[index].replace(/^"|"$/g, '') : '';
+        });
+        
+        // Get image and product links
+        const imageLinkIndex = headers.indexOf('image_link');
+        const productLinkIndex = headers.indexOf('link');
+
+        let imageUrl = imageLinkIndex !== -1 && values[imageLinkIndex] ? values[imageLinkIndex].replace(/^"|"$/g, '') : '';
+        let productLink = productLinkIndex !== -1 && values[productLinkIndex] ? values[productLinkIndex].replace(/^"|"$/g, '') : '';
+
+        // Basic validation for image_link
+        if (!imageUrl || imageUrl === 'in_stock' || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) {
+          imageUrl = 'https://picsum.photos/150'; // Placeholder image
+        }
+
+        // Map CSV fields to expected product structure
+        csvProducts.push({
+          id: product.id,
+          title: product.title,
+          description: product.description,
+          brand: product.brand,
+          price: parseFloat(product.price) || 0,
+          image_link: imageUrl, // Use validated image URL
+          product_link: productLink,
+          product_type: product.product_type ? product.product_type.toLowerCase() : '', // Use product_type for categorization
+          size: product.unit_pricing_measure || '',
+          barcode: product.gtin || ''
+        });
+      }
+    }
+    
+    console.log(`✅ Loaded ${csvProducts.length} products with images from products.csv`);
+    
+    // Count RTD products after loading
+    const rtdCount = csvProducts.filter(product => isRTDProduct(product)).length;
+    console.log(`🍹 Found ${rtdCount} RTD products from products.csv`);
+  } catch (error) {
+    console.error('❌ Failed to load products.csv:', error.message);
+  }
+}
+
+function loadRidgeData() {
+  try {
+    const ridgeData = fs.readFileSync('ridge_products.txt', 'utf8');
+    const lines = ridgeData.split('\n');
+    csvProducts = [];
+    
+    // Parse data lines (skip header)
+    let processedLines = 0;
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim()) {
+        processedLines++;
+        // Parse CSV with quoted fields
+        const fields = parseCsvLine(lines[i]);
+        if (processedLines <= 3) {
+          console.log(`🔧 Line ${i}: ${fields.length} fields, first few: [${fields.slice(0, 5).join(', ')}]`);
+        }
+        if (fields.length >= 15) {
+          // Field mapping based on header:
+          // 0=id, 1=title, 2=description, 3=link, 4=condition, 5=price, 6=sale_price, 
+          // 7=availability, 8=image_link, 9=gtin, 10=mpn, 11=google_product_category, 
+          // 12=brand, 13=product_type, 14=shipping_weight, 15=unit_pricing_measure
+          
+          // Extract price from "XX.XX USD" format
+          const priceText = fields[5] || '';
+          const priceMatch = priceText.match(/(\d+\.?\d*)/);
+          const price = priceMatch ? parseFloat(priceMatch[1]) : 0;
+          
+          // Get brand and title
+          const title = fields[1] || '';
+          const brand = fields[12] || '';
+          const descrip = title;
+          
+          // Determine product type based on category and product_type
+          const productType = fields[13] || '';
+          const category = fields[11] || '';
+          let type = '60'; // Default to beer type
+          
+          const typeText = (productType + ' ' + category).toLowerCase();
+          if (typeText.includes('wine')) {
+            type = '7';
+          } else if (typeText.includes('spirits') || typeText.includes('liquor') || typeText.includes('whiskey') || typeText.includes('vodka') || typeText.includes('rum') || typeText.includes('tequila')) {
+            type = '85';
+          } else if (typeText.includes('beer')) {
+            type = '60';
+          }
+          
+          csvProducts.push({
+            code_num: fields[0] || '',
+            barcode: fields[9] || '', // gtin field
+            brand: brand,
+            descrip: descrip,
+            type: type,
+            size: fields[15] || '750ml', // unit_pricing_measure
+            price: price,
+            storeUrl: fields[3] || '', // Direct Ridge URL (link field)
+            img: fields[8] || '', // Image URL from Ridge (image_link field)
+            productCategory: productType
+          });
+        }
+      }
+    }
+    console.log(`✅ Loaded ${csvProducts.length} products from Ridge Wine & Spirits`);
+    console.log(`📊 Total lines processed: ${lines.length - 1}, Valid lines: ${csvProducts.length}`);
+    
+    // Show first few products for debugging
+    if (csvProducts.length > 0) {
+      console.log(`🔍 First product: ${JSON.stringify(csvProducts[0], null, 2)}`);
+    }
+    
+    // Count RTD products after loading
+    const rtdCount = csvProducts.filter(product => isRTDProduct(product)).length;
+    console.log(`🍹 Found ${rtdCount} RTD products from Ridge feed`);
+  } catch (error) {
+    console.error('❌ Failed to load Ridge data:', error.message);
+    console.log('📥 Falling back to loading CSV data');
+    loadCSVDataFallback();
+  }
+}
+
+// Helper function to parse CSV line with quoted fields
+function parseCsvLine(line) {
+  // Split by tab, then remove quotes from each field
+  const fields = line.split('\t').map(field => {
+    // Remove leading and trailing quotes
+    if (field.startsWith('"') && field.endsWith('"')) {
+      return field.slice(1, -1);
+    }
+    return field;
+  });
+  return fields;
+}
+
+function loadCSVDataFallback() {
   try {
     const csvData = fs.readFileSync('vertopal.com_LIQCODE (1).csv', 'utf8');
     const lines = csvData.split('\n');
@@ -209,23 +398,21 @@ function loadCSVData() {
             descrip: fields[4],
             type: fields[5],
             size: fields[6],
-            price: parseFloat(fields[12]) || 0
+            price: parseFloat(fields[12]) || 0,
+            storeUrl: '', // Will be generated in recommendations
+            img: ''
           });
         }
       }
     }
-    console.log(`✅ Loaded ${csvProducts.length} products from CSV`);
-    
-    // Count RTD products after loading
-    const rtdCount = csvProducts.filter(product => isRTDProduct(product)).length;
-    console.log(`🍹 Found ${rtdCount} RTD products during CSV load`);
+    console.log(`✅ Loaded ${csvProducts.length} products from fallback CSV`);
   } catch (error) {
-    console.error('❌ Failed to load CSV:', error.message);
+    console.error('❌ Failed to load CSV fallback:', error.message);
   }
 }
 
-// Load CSV data on startup
-loadCSVData();
+// Load product data on startup
+loadProductMappings();
 
 // — Debug RTD products —
 app.get('/api/debug-rtd', async (req, res) => {
@@ -261,24 +448,19 @@ app.get('/api/category-tags/:category', async (req, res) => {
     
     let categoryProducts;
     
-    if (category === 'RTD') {
-      // RTD uses description-based detection
-      categoryProducts = csvProducts.filter(product => isRTDProduct(product));
-    } else {
-      // Beer and Wine use type codes
-      const typeCodes = TYPE_MAP[category];
-      if (!typeCodes) {
-        return res.status(400).json({ error: 'Invalid category' });
-      }
-      categoryProducts = csvProducts.filter(product => 
-        typeCodes.includes(product.type)
-      );
+    const targetTypes = TYPE_MAP[category];
+    if (!targetTypes) {
+      return res.status(400).json({ error: 'Invalid category' });
     }
+
+    categoryProducts = csvProducts.filter(product => 
+      targetTypes.some(type => product.product_type.includes(type))
+    );
 
     // Extract unique tags from all products in this category
     const tagSet = new Set();
     categoryProducts.forEach(product => {
-      const productTags = extractTagsFromBrand(`${product.brand} ${product.descrip}`, category);
+      const productTags = extractTagsFromBrand(`${product.brand} ${product.title}`, category);
       productTags.forEach(tag => tagSet.add(tag));
     });
 
@@ -384,47 +566,28 @@ app.get('/api/recommendations', async (req, res) => {
     // Filter products by category
     let categoryProducts;
     
-    if (category === 'RTD') {
-      // RTD uses description-based detection
-      categoryProducts = csvProducts.filter(product => isRTDProduct(product));
-    } else {
-      // Beer and Wine use type codes
-      const typeCodes = TYPE_MAP[category];
-      if (!typeCodes) {
-        return res.status(400).json({ error: 'Invalid category' });
-      }
-      categoryProducts = csvProducts.filter(product => 
-        typeCodes.includes(product.type)
-      );
+    const targetTypes = TYPE_MAP[category];
+    if (!targetTypes) {
+      return res.status(400).json({ error: 'Invalid category' });
     }
 
-    // Apply pack filtering for Beer (and optionally other categories) - only show multi-packs
+    categoryProducts = csvProducts.filter(product => 
+      targetTypes.some(type => product.product_type.includes(type))
+    );
+
+    // Apply pack filtering for Beer only (RTD products are often sold individually too)
     if (category === 'Beer') {
       categoryProducts = categoryProducts.filter(product => {
-        const brand = product.brand.toLowerCase();
-        const descrip = product.descrip.toLowerCase();
-        const size = product.size.toLowerCase();
+        const title = product.title.toLowerCase();
+        const description = product.description.toLowerCase();
+        const size = (product.size || '').toLowerCase();
         
-        // Look for pack indicators in size, brand, or description
-        const hasPackIndicator = (
+        return (
           size.includes('pk') || size.includes('pack') || size.includes('case') ||
-          brand.includes('pack') || brand.includes('case') || brand.includes('variety') ||
-          descrip.includes('pack') || descrip.includes('case') || descrip.includes('variety')
+          title.includes('pack') || title.includes('case') || title.includes('variety') ||
+          description.includes('pack') || description.includes('case') || description.includes('variety') ||
+          size.includes('6') || size.includes('12') || size.includes('18') || size.includes('24')
         );
-        
-        // Look for numeric pack indicators (6-pack, 12-pack, etc.)
-        const hasNumericPack = (
-          size.includes('6') || size.includes('12') || size.includes('18') || 
-          size.includes('24') || size.includes('30') || size.includes('36')
-        );
-        
-        // Exclude obvious single items
-        const isSingleItem = (
-          size.includes('ml') || size.includes('oz') || size.includes('bottle') ||
-          size.includes('can') || size.includes('pint') || size.includes('quart')
-        ) && !hasPackIndicator && !hasNumericPack;
-        
-        return (hasPackIndicator || hasNumericPack) && !isSingleItem;
       });
       console.log(`🍺 Filtered Beer to ${categoryProducts.length} pack items only`);
     }
@@ -432,7 +595,7 @@ app.get('/api/recommendations', async (req, res) => {
     // Filter by selected tags if any are provided
     if (selectedTags.length > 0) {
       categoryProducts = categoryProducts.filter(product => {
-        const searchText = `${product.brand} ${product.descrip}`.toLowerCase();
+        const searchText = `${product.brand} ${product.title} ${product.description}`.toLowerCase();
         return selectedTags.some(tag => searchText.includes(tag));
       });
       console.log(`🎯 Filtered to ${categoryProducts.length} items matching tags: [${selectedTags.join(', ')}]`);
@@ -448,58 +611,17 @@ app.get('/api/recommendations', async (req, res) => {
     
     // Apply limit
     const limitNum = parseInt(limit);
-    const results = categoryProducts.slice(0, limitNum).map(product => {
-      // Create appropriate category URL for Capital Beer & Wine
-      let storeUrl = 'https://capitalbeerwine.com';
-      
-      if (category === 'Beer') {
-        // Extract tags to determine beer type for better linking
-        const productTags = extractTagsFromBrand(`${product.brand} ${product.descrip}`, category);
-        if (productTags.includes('IPA')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/ipa/';
-        } else if (productTags.includes('Hard Seltzer')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/hard-seltzer/';
-        } else if (productTags.includes('Lager')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/lager/';
-        } else if (productTags.includes('Stout')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/stout/';
-        } else if (productTags.includes('Pilsner')) {
-          storeUrl = 'https://capitalbeerwine.com/beer/pilsner/';
-        } else {
-          storeUrl = 'https://capitalbeerwine.com/beer/';
-        }
-      } else if (category === 'Wine') {
-        // Extract tags to determine wine type for better linking
-        const productTags = extractTagsFromBrand(`${product.brand} ${product.descrip}`, category);
-        if (productTags.includes('Chardonnay')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/chardonnay/';
-        } else if (productTags.includes('Cabernet Sauvignon')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/cabernet-sauvignon/';
-        } else if (productTags.includes('Pinot Noir')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/pinot-noir/';
-        } else if (productTags.includes('Sauvignon Blanc')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/sauvignon-blanc/';
-        } else if (productTags.includes('Red Blend')) {
-          storeUrl = 'https://capitalbeerwine.com/wine/red-blends/';
-        } else {
-          storeUrl = 'https://capitalbeerwine.com/wine/';
-        }
-      } else if (category === 'RTD') {
-        storeUrl = 'https://capitalbeerwine.com/beer/'; // RTDs often grouped with beer
-      }
-      
-      return {
-        id: product.code_num,
-        name: `${product.brand} ${product.descrip}`.trim(),
-        price: product.price,
-        img: `https://via.placeholder.com/80?text=${encodeURIComponent(product.brand.split(' ')[0])}`,
-        tags: extractTagsFromBrand(`${product.brand} ${product.descrip}`, category),
-        size: product.size,
-        barcode: product.barcode,
-        storeUrl: storeUrl,
-        storeName: 'Capital Beer & Wine'
-      };
-    });
+    const results = categoryProducts.slice(0, limitNum).map(product => ({
+      id: product.id,
+      name: product.title.trim(),
+      price: product.price,
+      img: product.image_link, // Use image_link from CSV
+      tags: extractTagsFromBrand(`${product.brand} ${product.title}`, category),
+      size: product.size,
+      barcode: product.barcode,
+      storeUrl: product.product_link || 'https://ridgewineandspirits.com',
+      storeName: 'Ridge Wine & Spirits'
+    }));
     
     console.log(`✅ Returning ${results.length} real CSV results for ${category}`);
     res.json(results);
@@ -512,8 +634,8 @@ app.get('/api/recommendations', async (req, res) => {
 });
 
 // Helper function to extract tags from brand name
-const extractTagsFromBrand = (brandName, category) => {
-  const lowerBrand = brandName.toLowerCase();
+const extractTagsFromBrand = (searchText, category) => {
+  const lowerBrand = searchText.toLowerCase();
   const tags = [];
   
   if (category === 'Wine') {
