@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SipBuddy - Your AI-Powered Drink Expert</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-wine-glass-alt"></i> SipBuddy
+            </div>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#network">Network</a>
+                <a href="#reviews">Reviews</a>
+                <a href="#" class="cta-button">Launch App</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-text">
+                    <h1>From Party Planning to Personal Picks, SipBuddy is Your AI-Powered Drink Expert.</h1>
+                    <p>Stop guessing. Start discovering. Get the perfect drinks for any occasion, tailored to your taste and budget.</p>
+                    <a href="#" class="cta-button">Get Your First Recommendation</a>
+                </div>
+            </section>
+
+            <section id="features" class="features-section">
+                <div class="feature">
+                    <div class="feature-text">
+                        <h2>Never Run Out of Drinks Again</h2>
+                        <p>Planning a party? Tell SipBuddy your number of guests and the duration, and our AI calculates the exact amount of beer, wine, and spirits you'll need. It's party planning, simplified.</p>
+                    </div>
+                    <div class="feature-visual">
+                        <img src="https://images.pexels.com/photos/3171837/pexels-photo-3171837.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Friends toasting at a party">
+                    </div>
+                </div>
+                <div class="feature reverse">
+                    <div class="feature-text">
+                        <h2>Discover Your New Favorite Drink</h2>
+                        <p>Looking for something new? Our Personal Sommelier flow lets you choose your preferred categories and tags to find the perfect drink for a quiet night in. Our AI learns your taste to make every recommendation better than the last.</p>
+                    </div>
+                    <div class="feature-visual">
+                        <img src="https://images.pexels.com/photos/889930/pexels-photo-889930.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Woman choosing a bottle of wine">
+                    </div>
+                </div>
+            </section>
+
+            <section id="network" class="network-section">
+                <h2>Find SipBuddy Near You</h2>
+                <p class="section-subtitle">We're partnering with the best local and national stores to make your next drink run a breeze.</p>
+                <div class="network-container">
+                    <div id="map"></div>
+                </div>
+            </section>
+
+            <section id="reviews" class="testimonials-section">
+                <h2>Don't Just Take Our Word For It</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"This is a game-changer for hosting. I put in my party details and SipBuddy told me exactly what to buy. Saved me so much time and stress."</p>
+                        <div class="author">- Alex M.</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"I love using the personal sommelier to find new wines. The recommendations are spot on and I've discovered some amazing bottles I would've never picked myself."</p>
+                        <div class="author">- Jessica R.</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"The 'Swap' feature is genius. If I'm not feeling the first suggestion, I just tap a button and get another great option instantly. So cool!"</p>
+                        <div class="author">- David L.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="who-its-for" class="who-its-for-section">
+                <h2>Perfect For Every Kind of Drink Lover</h2>
+                <div class="personas-grid">
+                    <div class="persona-card">
+                        <img src="https://images.pexels.com/photos/5905083/pexels-photo-5905083.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Party Host">
+                        <h3>The Party Host</h3>
+                        <p>Effortlessly plan for any crowd. Our quantity calculator means you'll never buy too much or run out of your guests' favorite drinks again.</p>
+                    </div>
+                    <div class="persona-card">
+                        <img src="https://images.pexels.com/photos/3771073/pexels-photo-3771073.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Curious Connoisseur">
+                        <h3>The Curious Connoisseur</h3>
+                        <p>Break out of your routine. Discover new wines, craft beers, and spirits tailored to your unique taste profile. Broaden your horizons with every sip.</p>
+                    </div>
+                    <div class="persona-card">
+                        <img src="https://images.pexels.com/photos/4114633/pexels-photo-4114633.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Everyday Sipper">
+                        <h3>The Everyday Sipper</h3>
+                        <p>Take the guesswork out of your evening drink. Get quick, delicious recommendations for a quiet night in, based on what you already love.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="faq-section">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-item">
+                    <h3 class="faq-question">Is SipBuddy free to use?</h3>
+                    <p class="faq-answer">Yes! Our core features—the party planner and personal recommendations—are completely free to use.</p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">How does the AI work?</h3>
+                    <p class="faq-answer">Our smart engine analyzes your preferences and compares them against a massive database of beverages, factoring in popularity, new arrivals, and even expert ratings to find your perfect match.</p>
+                </div>
+                <div class="faq-item">
+                    <h3 class="faq-question">Can I buy drinks through SipBuddy?</h3>
+                    <p class="faq-answer">While you can't purchase directly in the app yet, our Partner Network map shows you exactly which local stores carry your recommended drinks, making your shopping trip quick and easy.</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column about">
+                    <h4><i class="fas fa-wine-glass-alt"></i> SipBuddy</h4>
+                    <p>Your AI-Powered Drink Expert. Stop guessing, start discovering.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Navigate</h4>
+                    <a href="#features">Features</a>
+                    <a href="#network">Network</a>
+                    <a href="#reviews">Reviews</a>
+                    <a href="#faq">FAQs</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <a href="mailto:hello@sipbuddy.com">hello@sipbuddy.com</a>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SipBuddy. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script src="script.js"></script>
+</body>
+</html>
