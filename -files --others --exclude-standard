@@ -1,0 +1,29 @@
+[33mcommit 35ca69f98725ebb64e6d3ef6f63dad69bbdb46ef[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32magransh[m[33m, [m[1;31morigin/agransh[m[33m)[m
+Author: agransh <47201827+agransh@users.noreply.github.com>
+Date:   Wed Aug 6 19:44:28 2025 -0400
+
+    Integrate products.csv with images and Ridge Wine & Spirits URLs
+    
+    - Updated server.js to parse products.csv properly with quoted CSV handling
+    - Added image_link mapping from products.csv for product recommendations
+    - Replaced Capital Beer & Wine URLs with Ridge Wine & Spirits links
+    - Added proper CSV parsing that handles quoted fields and commas
+    - Updated product categorization to use product_type from CSV
+    - Added 620 products with real images and correct store links
+    - Fixed RTD product detection and filtering
+    - Updated recommendation endpoint to use image_link directly from CSV
+    - Server now loads products from products.csv instead of old LIQCODE data
+
+ backend/products.csv       | 621 [32m+++++++++++++++++++++++++++++++++++++++++++++[m
+ backend/ridge_products.txt |   1 [32m+[m
+ backend/server.js          | 356 [32m+++++++++++++++++[m[31m---------[m
+ 3 files changed, 861 insertions(+), 117 deletions(-)
+
+[33mcommit 01b73efe2fb27d4317a12ccbe68c892023292e00[m
+Author: agransh <47201827+agransh@users.noreply.github.com>
+Date:   Tue Aug 5 14:49:07 2025 -0400
+
+    Add existing sipbuddy code on agransh branch
+
+ backend/server.js | 85 [32m++++++++++++++++++++++++++++++++++++++++++++++[m[31m---------[m
+ 1 file changed, 71 insertions(+), 14 deletions(-)
