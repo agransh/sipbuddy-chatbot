@@ -1,25 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
 :root {
-    --primary-glow: #667eea;
-    --secondary-glow: #764ba2;
-    --background-dark: #111827;
-    --text-light: #f9fafb;
-    --text-muted: #9ca3af;
-    --card-bg: #1f2937;
-    --star-color: #f59e0b;
-}
+    /* SipBuddy Color Palette */
+    --primary: #667eea;
+    --primary-end: #764ba2;
+    --secondary: #f093fb;
+    --secondary-end: #f5576c;
+    --accent: #4facfe;
+    --accent-end: #00f2fe;
+    --success: #a8edea;
+    --success-end: #fed6e3;
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+    /* SipBuddy Neutrals */
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    --star-color: #f59e0b; /* Keep star color */
 }
 
 body {
     font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #1a2035, #111827);
-    color: var(--text-light);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-end) 100%);
+    color: var(--white); /* White text on dark background */
     line-height: 1.7;
 }
 
@@ -39,30 +50,30 @@ header {
 .logo {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--text-light);
+    color: var(--white); /* White text for logo */
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .logo i {
-    color: var(--primary-glow);
+    color: var(--white); /* Use white for icon */
 }
 
 nav a {
     text-decoration: none;
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for nav links */
     font-weight: 600;
     margin-left: 2rem;
     transition: color 0.3s ease;
 }
 
 nav a:hover {
-    color: var(--text-light);
+    color: var(--white); /* White on hover */
 }
 
 .cta-button {
-    background: linear-gradient(135deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-end) 100%);
     color: #fff;
     padding: 0.75rem 1.5rem;
     border-radius: 50px;
@@ -73,12 +84,13 @@ nav a:hover {
 
 .cta-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -10px var(--primary-glow);
+    box-shadow: 0 10px 20px -10px var(--primary); /* Use primary for shadow */
 }
 
 .hero {
     text-align: center;
     padding: 6rem 0;
+    color: var(--white); /* Ensure hero text is white */
 }
 
 .hero-text h1 {
@@ -86,17 +98,84 @@ nav a:hover {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-200) 100%); /* Lighter gradient for heading */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .hero-text p {
     font-size: 1.25rem;
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for hero paragraph */
     max-width: 800px;
     margin: 0 auto 2rem;
 }
 
+.search-container {
+    display: flex;
+    justify-content: center; /* Center the single search box */
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.search-box input {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-box input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-box input:focus {
+    border-color: var(--white);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-button {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-end) 100%);
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -10px var(--accent);
+}
+
+@media (max-width: 768px) {
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-button {
+        width: 100%;
+    }
+}
+
 .features-section {
     padding: 4rem 0;
+    color: var(--white); /* Ensure feature text is white */
 }
 
 .feature {
@@ -158,7 +237,7 @@ nav a:hover {
 }
 
 .section-subtitle {
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for subtitles */
     max-width: 600px;
     margin: 0 auto 3rem;
 }
@@ -167,6 +246,7 @@ nav a:hover {
     height: 500px;
     border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 #map {
@@ -175,7 +255,7 @@ nav a:hover {
 }
 
 .leaflet-tile-pane {
-    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    filter: brightness(1) invert(0) contrast(1) hue-rotate(0deg) saturate(1) brightness(1); /* Light mode for map */
 }
 
 .testimonials-grid {
@@ -186,16 +266,19 @@ nav a:hover {
 }
 
 .testimonial-card {
-    background-color: var(--card-bg);
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white for cards */
     padding: 2rem;
     border-radius: 10px;
     text-align: left;
-    border-left: 4px solid var(--primary-glow);
+    border-left: 4px solid var(--white); /* Use white for accent */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: var(--white); /* White text for card content */
 }
 
 .who-its-for-section, .faq-section {
     text-align: center;
     padding: 4rem 0;
+    color: var(--white); /* Ensure text is white */
 }
 
 .who-its-for-section h2, .faq-section h2 {
@@ -210,10 +293,11 @@ nav a:hover {
 }
 
 .persona-card {
-    background-color: var(--card-bg);
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white for persona cards */
     border-radius: 10px;
     overflow: hidden;
     transition: transform 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .persona-card:hover {
@@ -229,33 +313,36 @@ nav a:hover {
 .persona-card h3 {
     font-size: 1.5rem;
     margin: 1.5rem 0 1rem;
+    color: var(--white); /* White text for persona titles */
 }
 
 .persona-card p {
     padding: 0 1.5rem 1.5rem;
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for persona descriptions */
 }
 
 .faq-item {
     max-width: 800px;
     margin: 0 auto 2rem;
     text-align: left;
-    border-bottom: 1px solid var(--card-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Lighter border for FAQ items */
     padding-bottom: 2rem;
 }
 
 .faq-question {
     font-size: 1.25rem;
     margin-bottom: 1rem;
+    color: var(--white); /* White text for FAQ questions */
 }
 
 .faq-answer {
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for FAQ answers */
 }
 
 .site-footer {
-    background-color: var(--card-bg);
+    background-color: rgba(0, 0, 0, 0.2); /* Darker semi-transparent background for footer */
     padding: 3rem 0 2rem;
+    color: var(--gray-200); /* Lighter text for footer */
 }
 
 .footer-grid {
@@ -268,18 +355,19 @@ nav a:hover {
 .footer-column h4 {
     font-size: 1.25rem;
     margin-bottom: 1rem;
+    color: var(--white); /* White text for footer column titles */
 }
 
 .footer-column a {
     display: block;
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for footer links */
     text-decoration: none;
     margin-bottom: 0.5rem;
     transition: color 0.3s ease;
 }
 
 .footer-column a:hover {
-    color: var(--text-light);
+    color: var(--white); /* White on hover */
 }
 
 .social-icons {
@@ -290,12 +378,13 @@ nav a:hover {
     display: inline-block;
     margin-right: 1rem;
     font-size: 1.5rem;
+    color: var(--white); /* White for social icons */
 }
 
 .footer-bottom {
     text-align: center;
-    color: var(--text-muted);
-    border-top: 1px solid var(--background-dark);
+    color: var(--gray-200); /* Lighter gray for footer bottom text */
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Lighter border for footer bottom */
     padding-top: 2rem;
 }
 
@@ -312,5 +401,5 @@ nav a:hover {
 footer {
     text-align: center;
     padding: 2rem 0;
-    color: var(--text-muted);
+    color: var(--gray-200); /* Lighter gray for general footer text */
 }
